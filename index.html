@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no">
+    <title>画板</title>
+    <link rel="stylesheet" href="./canvasStyle.css">
+    <script src="//at.alicdn.com/t/font_673719_4z6fufg0fxswcdi.js"></script>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="action" id="action">
+        <button id="eraser">橡皮擦</button>
+        <button id="brush">画笔</button>
+        <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-pen"></use>
+        </svg>
+        <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-eraser"></use>
+        </svg>
+    </div>
+    <script>
+        var canvas = document.getElementById('canvas');
+        //设置画板尺寸
+        autoSetCanvasSize();
+        //获取vanvas的上下文环境
+        var context = canvas.getContext('2d');
+        
+        // 声明绘画状态变量
+        var eraserEnable = false;
+        var using = false;
+        var lastPoint = {'x': undefined,'y': undefined}
+        var newPoint = {'x': undefined,'y': undefined} //newPoint 也可以在事件内声明
+        
+        // 开始绘画
+        if('ontouchstart' in window){
+            touchDrawStart();    
+        }else{
+            mouseDrawStart();
+        }
+        
+        // 切换画笔和橡皮擦
+        switchover();
+
+// 工具函数--------------------------------
+        function autoSetCanvasSize(){
+            setCanvasSize();
+            window.onresize = function(){
+                setCanvasSize();
+            }
+        }
+        function setCanvasSize(){
+            //获取页面宽高的方式之一
+            var pageHeight = document.documentElement.clientHeight;
+            var pageWidth = document.documentElement.clientWidth;
+            canvas.height = pageHeight;
+            canvas.width = pageWidth;
+        }
+
+        function switchover(){
+            eraser.onclick = function(){
+                eraserEnable = true;
+                action.className = "action brushDisplay"
+            }
+            brush.onclick = function(){
+                eraserEnable = false;
+                action.className = "action"
+            }
+        }
+
+        // 触屏模式绘画
+        function touchDrawStart(){
+            canvas.ontouchstart = function(touchStartEvent){
+                var x = touchStartEvent.touches[0].clientX;
+                var y = touchStartEvent.touches[0].clientY;
+                using = true;
+                if(eraserEnable){
+                    context.clearRect(x,y,10,10);
+                }else{
+                    lastPoint.x = x;
+                    lastPoint.y = y;
+                }    
+            }
+
+            canvas.ontouchmove = function(touchMoveEvent){
+                var x = touchMoveEvent.touches[0].clientX;
+                var y = touchMoveEvent.touches[0].clientY;
+                if(using){
+                    if(eraserEnable){
+                        context.clearRect(x-5,y-5,10,10);
+                    }else{
+                        newPoint = {'x': x,'y': y};
+                        context.lineWidth = 5;
+                        drawLine(lastPoint.x,lastPoint.y,newPoint.x,newPoint.y);
+                        lastPoint = newPoint; 
+                    }
+                }
+            }
+
+            canvas.ontouchend = function(touchEndEvent){
+                using = false;
+            }
+        }
+
+        // 鼠标模式绘画
+        function mouseDrawStart(){
+            canvas.onmousedown = function(downEvent){
+                var x = downEvent.clientX;
+                var y = downEvent.clientY;
+                using = true;
+                if(eraserEnable){
+                    context.clearRect(x,y,10,10);
+                }else{
+                    lastPoint.x = x;
+                    lastPoint.y = y;
+                    // drawCricle(x,y); 
+                }    
+            }
+
+            canvas.onmousemove = function(moveEvent){
+                var x = moveEvent.clientX;
+                var y = moveEvent.clientY;
+                if(using){
+                    if(eraserEnable){
+                        context.clearRect(x-5,y-5,10,10);
+                    }else{
+                        // drawCricle(x,y);
+                        // newPoint.x = x;  
+                        // newPoint.y = y;
+                        newPoint = {'x': x,'y': y};
+                        context.lineWidth = 5;
+                        drawLine(lastPoint.x,lastPoint.y,newPoint.x,newPoint.y);
+                        // lastPoint.x = newPoint.x; 
+                        // lastPoint.y = newPoint.y; 
+                        lastPoint = newPoint; 
+                    }
+                }
+            }
+
+            canvas.onmouseup = function(upEvent){
+                using = false;
+            }
+        }
+
+        function drawCricle(x,y){
+            context.beginPath();
+            context.arc(x, y, 3, 0, 7, true);
+            context.fill();
+        }
+        function drawLine(x1,y1,x2,y2){
+            context.beginPath();
+            context.moveTo(x1,y1);
+            context.lineTo(x2,y2);
+            context.closePath(); //此处不写此句也可测试成功？？
+            context.stroke();    
+        }
+    </script>
+</body>
+</html>

@@ -37,6 +37,10 @@
             <li id="thick" class="thick"></li>
         </ul>
     <script>
+        //尝试解决触屏模式时的画板抖动
+        // document.body.ontouchstart = function(eee){
+        //     eee.preventDefault();
+        // }
         var canvas = document.getElementById('canvas');
         //设置画板尺寸
         autoSetCanvasSize();
@@ -78,18 +82,7 @@
         //清除
         clearPicture();
         //保存
-        savePicture()
-        function savePicture(){
-            save.onclick = function(){
-            var url = canvas.toDataURL("image/png");
-            var a = document.createElement('a');
-            document.body.appendChild(a);
-            a.href = url;
-            a.download = 'xxx';
-            a.click();
-            }
-        }
-        
+        savePicture();
         
 
 // 工具函数--------------------------------
@@ -147,6 +140,17 @@
             console.log(1);
             clear.onclick = function(){
                 context.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        //保存
+        function savePicture(){
+            save.onclick = function(){
+            var url = canvas.toDataURL("image/png");
+            var a = document.createElement('a');
+            document.body.appendChild(a);
+            a.href = url;
+            a.download = 'xxx';
+            a.click();
             }
         }
 
